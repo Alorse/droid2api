@@ -1,64 +1,64 @@
-# Docker 部署指南
+# Docker Deployment Guide
 
-## 本地 Docker 部署
+## Local Docker Deployment
 
-### 1. 准备环境变量
+### 1. Prepare Environment Variables
 
-创建 `.env` 文件（从 `.env.example` 复制）：
+Create `.env` file (from `.env.example`):
 
 ```bash
 cp .env.example .env
 ```
 
-编辑 `.env` 文件，配置认证方式（按优先级选择其一）：
+Edit `.env` file, configure authentication method (choose one based on priority):
 
 ```env
-# 方式1：使用固定API密钥（推荐生产环境）
+# Method 1: Use fixed API key (recommended for production)
 FACTORY_API_KEY=your_factory_api_key_here
 
-# 方式2：使用refresh token自动刷新
+# Method 2: Use refresh token to automatically refresh
 DROID_REFRESH_KEY=your_actual_refresh_token_here
 ```
 
-**优先级：FACTORY_API_KEY > DROID_REFRESH_KEY > 客户端authorization**
+**Priority: FACTORY_API_KEY > DROID_REFRESH_KEY > Client authorization**
 
-### 2. 使用 Docker Compose 启动
+### 2. Start with Docker Compose
 
 ```bash
 docker-compose up -d
 ```
 
-查看日志：
+View logs:
 
 ```bash
 docker-compose logs -f
 ```
 
-停止服务：
+Stop service:
 
 ```bash
 docker-compose down
 ```
 
-### 3. 使用原生 Docker 命令
+### 3. Use Native Docker Command
 
-**构建镜像：**
+**Build image:**
 
 ```bash
 docker build -t droid2api:latest .
 ```
 
-**运行容器：**
+**Run container:**
 
 ```bash
-# 方式1：使用固定API密钥
+# Method 1: Use fixed API key
 docker run -d \
   --name droid2api \
   -p 3000:3000 \
   -e FACTORY_API_KEY="your_factory_api_key_here" \
   droid2api:latest
 
-# 方式2：使用refresh token
+# Method 2: Use refresh token to automatically refresh
 docker run -d \
   --name droid2api \
   -p 3000:3000 \
@@ -66,86 +66,86 @@ docker run -d \
   droid2api:latest
 ```
 
-**查看日志：**
+**View logs:**
 
 ```bash
 docker logs -f droid2api
 ```
 
-**停止容器：**
+**Stop container:**
 
 ```bash
 docker stop droid2api
 docker rm droid2api
 ```
 
-## 云平台部署
+## Cloud Platform Deployment
 
-### Render.com 部署
+### Render.com Deployment
 
-1. 在 Render 创建新的 Web Service
-2. 连接你的 GitHub 仓库
-3. 配置：
+1. In Render, create a new Web Service
+2. Connect your GitHub repository
+3. Configure:
    - **Environment**: Docker
    - **Branch**: docker-deploy
    - **Port**: 3000
-4. 添加环境变量（选择其一）：
-   - `FACTORY_API_KEY`: 固定API密钥（推荐）
+4. Add environment variables (choose one):
+   - `FACTORY_API_KEY`: Fixed API key (recommended)
    - `DROID_REFRESH_KEY`: refresh token
-5. 点击 "Create Web Service"
+5. Click "Create Web Service"
 
-### Railway 部署
+### Railway Deployment
 
-1. 在 Railway 创建新项目
-2. 选择 "Deploy from GitHub repo"
-3. 选择分支：docker-deploy
-4. Railway 会自动检测 Dockerfile
-5. 添加环境变量（选择其一）：
-   - `FACTORY_API_KEY`: 固定API密钥（推荐）
+1. In Railway, create a new project
+2. Select "Deploy from GitHub repo"
+3. Select branch: docker-deploy
+4. Railway will automatically detect Dockerfile
+5. Add environment variables (choose one):
+   - `FACTORY_API_KEY`: Fixed API key (recommended)
    - `DROID_REFRESH_KEY`: refresh token
-6. 部署完成后会自动分配域名
+6. Deploy completed, will automatically assign a domain name
 
-### Fly.io 部署
+### Fly.io Deployment
 
-1. 安装 Fly CLI：
+1. Install Fly CLI:
    ```bash
    curl -L https://fly.io/install.sh | sh
    ```
 
-2. 登录：
+2. Login:
    ```bash
    fly auth login
    ```
 
-3. 初始化应用（在项目目录）：
+3. Initialize application (in project directory):
    ```bash
    fly launch
    ```
 
-4. 设置环境变量（选择其一）：
+4. Set environment variables (choose one):
    ```bash
-   # 使用固定API密钥（推荐）
+   # Use fixed API key (recommended)
    fly secrets set FACTORY_API_KEY="your_factory_api_key_here"
    
-   # 或使用refresh token
+   # Or use refresh token
    fly secrets set DROID_REFRESH_KEY="your_refresh_token_here"
    ```
 
-5. 部署：
+5. Deploy:
    ```bash
    fly deploy
    ```
 
-### Google Cloud Run 部署
+### Google Cloud Run Deployment
 
-1. 构建并推送镜像：
+1. Build and push image:
    ```bash
    gcloud builds submit --tag gcr.io/YOUR_PROJECT_ID/droid2api
    ```
 
-2. 部署到 Cloud Run：
+2. Deploy to Cloud Run:
    ```bash
-   # 使用固定API密钥（推荐）
+   # Use fixed API key (recommended)
    gcloud run deploy droid2api \
      --image gcr.io/YOUR_PROJECT_ID/droid2api \
      --platform managed \
@@ -154,7 +154,7 @@ docker rm droid2api
      --set-env-vars FACTORY_API_KEY="your_factory_api_key_here" \
      --port 3000
    
-   # 或使用refresh token
+   # Or use refresh token
    gcloud run deploy droid2api \
      --image gcr.io/YOUR_PROJECT_ID/droid2api \
      --platform managed \
@@ -164,23 +164,23 @@ docker rm droid2api
      --port 3000
    ```
 
-### AWS ECS 部署
+### AWS ECS Deployment
 
-1. 创建 ECR 仓库
-2. 推送镜像到 ECR
-3. 创建 ECS 任务定义
-4. 配置环境变量（选择其一）：
-   - `FACTORY_API_KEY`（推荐）
+1. Create ECR repository
+2. Push image to ECR
+3. Create ECS task definition
+4. Configure environment variables (choose one):
+   - `FACTORY_API_KEY` (recommended)
    - `DROID_REFRESH_KEY`
-5. 创建 ECS 服务
+5. Create ECS service
 
-## 持久化配置
+## Persistent Configuration
 
-如果需要持久化刷新的 tokens：
+If you need to persist refresh tokens:
 
-### Docker Compose 方式
+### Docker Compose Way
 
-修改 `docker-compose.yml`：
+Modify `docker-compose.yml`:
 
 ```yaml
 services:
@@ -192,12 +192,12 @@ volumes:
   auth-data:
 ```
 
-### Docker 命令方式
+### Docker Command Way
 
 ```bash
 docker volume create droid2api-data
 
-# 使用固定API密钥
+# Use fixed API key
 docker run -d \
   --name droid2api \
   -p 3000:3000 \
@@ -205,7 +205,7 @@ docker run -d \
   -v droid2api-data:/app \
   droid2api:latest
 
-# 或使用refresh token
+# Or use refresh token
 docker run -d \
   --name droid2api \
   -p 3000:3000 \
@@ -214,71 +214,71 @@ docker run -d \
   droid2api:latest
 ```
 
-## 健康检查
+## Health Check
 
-容器启动后，可以通过以下端点检查服务状态：
+After container starts, you can check the service status through the following endpoints:
 
 ```bash
 curl http://localhost:3000/
 curl http://localhost:3000/v1/models
 ```
 
-## 环境变量说明
+## Environment Variable Description
 
-| 变量名 | 必需 | 优先级 | 说明 |
+| Variable Name | Required | Priority | Description |
 |--------|------|--------|------|
-| `FACTORY_API_KEY` | 否 | 最高 | 固定API密钥，跳过自动刷新（推荐生产环境） |
-| `DROID_REFRESH_KEY` | 否 | 次高 | Factory refresh token，用于自动刷新 API key |
-| `NODE_ENV` | 否 | - | 运行环境，默认 production |
+| `FACTORY_API_KEY` | No | Highest | Fixed API key, skip auto refresh (recommended for production) |
+| `DROID_REFRESH_KEY` | No | Second Highest | Factory refresh token, used to auto refresh API key |
+| `NODE_ENV` | No | - | Run environment, default production |
 
-**注意**：`FACTORY_API_KEY` 和 `DROID_REFRESH_KEY` 至少配置一个
+**Note**: `FACTORY_API_KEY` and `DROID_REFRESH_KEY` must be configured at least one
 
-## 故障排查
+## Troubleshooting
 
-### 容器无法启动
+### Container cannot start
 
-查看日志：
+View logs:
 ```bash
 docker logs droid2api
 ```
 
-常见问题：
-- 缺少认证配置（`FACTORY_API_KEY` 或 `DROID_REFRESH_KEY`）
-- API密钥或refresh token 无效或过期
-- 端口 3000 已被占用
+Common issues:
+- Missing authentication configuration (`FACTORY_API_KEY` or `DROID_REFRESH_KEY`)
+- Invalid or expired API key or refresh token
+- Port 3000 is already in use
 
-### API 请求返回 401
+### API Request Returns 401
 
-**原因**：API密钥或refresh token 过期或无效
+**Reason**: API key or refresh token expired or invalid
 
-**解决**：
-1. 如果使用 `FACTORY_API_KEY`：检查密钥是否有效
-2. 如果使用 `DROID_REFRESH_KEY`：获取新的 refresh token
-3. 更新环境变量
-4. 重启容器
+**Solution**:
+1. If using `FACTORY_API_KEY`: check if the key is valid
+2. If using `DROID_REFRESH_KEY`: get a new refresh token
+3. Update environment variables
+4. Restart container
 
-### 容器频繁重启
+### Container Frequently Restarts
 
-检查健康检查日志和应用日志，可能是：
-- 内存不足
-- API key 刷新失败
-- 配置文件错误
+Check health check logs and application logs, it may be:
+- Insufficient memory
+- API key refresh failed
+- Configuration file error
 
-## 安全建议
+## Security Recommendations
 
-1. **不要将 `.env` 文件提交到 Git**
-2. **使用 secrets 管理敏感信息**（如 GitHub Secrets、Docker Secrets）
-3. **生产环境推荐使用 `FACTORY_API_KEY`**（更稳定，无需刷新）
-4. **定期更新 API 密钥和 refresh token**
-5. **启用 HTTPS**（云平台通常自动提供）
-6. **限制访问来源**（通过防火墙或云平台配置）
+1. **Do not commit `.env` file to Git**
+2. **Use secrets to manage sensitive information** (e.g., GitHub Secrets, Docker Secrets)
+3. **Production environment recommended to use `FACTORY_API_KEY`** (more stable, no need to refresh)
+4. **Regularly update API keys and refresh tokens**
+5. **Enable HTTPS** (cloud platforms usually provide automatically)
+6. **Limit access sources** (through firewalls or cloud platform configuration)
 
-## 性能优化
+## Performance Optimization
 
-### 多阶段构建（可选）
+### Multi-stage build (optional)
 
 ```dockerfile
-# 构建阶段
+# Build stage
 FROM node:24-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
@@ -293,9 +293,9 @@ EXPOSE 3000
 CMD ["node", "server.js"]
 ```
 
-### 资源限制
+### Resource Limit
 
-在 docker-compose.yml 中添加：
+Add to docker-compose.yml:
 
 ```yaml
 services:
@@ -310,24 +310,24 @@ services:
           memory: 256M
 ```
 
-## 监控和日志
+## Monitoring and Logging
 
-### 查看实时日志
+### View real-time logs
 
 ```bash
 docker-compose logs -f
 ```
 
-### 导出日志
+### Export logs
 
 ```bash
 docker logs droid2api > droid2api.log 2>&1
 ```
 
-### 集成监控工具
+### Integration with monitoring tools
 
-可以集成：
+Can be integrated:
 - Prometheus + Grafana
 - Datadog
 - New Relic
-- Sentry（错误追踪）
+- Sentry (error tracking)
