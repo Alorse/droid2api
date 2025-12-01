@@ -1,88 +1,88 @@
 # droid2api
 
-OpenAI 兼容的 API 代理服务器，统一访问不同的 LLM 模型。
+OpenAI-compatible API proxy server that provides unified access to different LLM models.
 
-> 新建了个讨论群:[824743643]( https://qm.qq.com/q/cm0CWAEFGM) ，有使用上的问题或者建议，或者单纯交流可以进来玩玩。
+> New discussion group created: [824743643]( https://qm.qq.com/q/cm0CWAEFGM) for usage questions, suggestions, or just to chat.
 
-## 核心功能
+## Core Features
 
-### 🔐 双重授权机制
-- **FACTORY_API_KEY优先级** - 环境变量设置固定API密钥，跳过自动刷新
-- **令牌自动刷新** - WorkOS OAuth集成，系统每6小时自动刷新access_token
-- **客户端授权回退** - 无配置时使用客户端请求头的authorization字段
-- **智能优先级** - FACTORY_API_KEY > refresh_token > 客户端authorization
-- **容错启动** - 无任何认证配置时不报错，继续运行支持客户端授权
+### 🔐 Dual Authorization Mechanism
+- **FACTORY_API_KEY Priority** - Set fixed API key via environment variable, skip auto-refresh
+- **Token Auto-Refresh** - WorkOS OAuth integration, system automatically refreshes access_token every 6 hours
+- **Client Authorization Fallback** - Uses client request header authorization field when no configuration
+- **Smart Priority** - FACTORY_API_KEY > refresh_token > client authorization
+- **Fault-Tolerant Startup** - Continues running and supports client authorization when no authentication configured
 
-### 🧠 智能推理级别控制
-- **五档推理级别** - auto/off/low/medium/high，灵活控制推理行为
-- **auto模式** - 完全遵循客户端原始请求，不做任何推理参数修改
-- **固定级别** - off/low/medium/high强制覆盖客户端推理设置
-- **OpenAI模型** - 自动注入reasoning字段，effort参数控制推理强度
-- **Anthropic模型** - 自动配置thinking字段和budget_tokens (4096/12288/24576)
-- **智能头管理** - 根据推理级别自动添加/移除anthropic-beta相关标识
+### 🧠 Intelligent Reasoning Level Control
+- **Five-Level Reasoning Control** - auto/off/low/medium/high, flexible control of reasoning behavior
+- **Auto Mode** - Completely follows client original request, no reasoning parameter modifications
+- **Fixed Levels** - off/low/medium/high forcibly override client reasoning settings
+- **OpenAI Models** - Automatically inject reasoning field, effort parameter controls reasoning intensity
+- **Anthropic Models** - Automatically configure thinking field and budget_tokens (4096/12288/24576)
+- **Smart Header Management** - Automatically add/remove anthropic-beta related identifiers based on reasoning level
 
-### 🚀 服务器部署/Docker部署
-- **本地服务器** - 支持npm start快速启动
-- **Docker容器化** - 提供完整的Dockerfile和docker-compose.yml
-- **云端部署** - 支持各种云平台的容器化部署
-- **环境隔离** - Docker部署确保依赖环境的完全一致性
-- **生产就绪** - 包含健康检查、日志管理等生产级特性
+### 🚀 Server/Docker Deployment
+- **Local Server** - Supports npm start quick launch
+- **Docker Containerization** - Provides complete Dockerfile and docker-compose.yml
+- **Cloud Deployment** - Supports containerized deployment on various cloud platforms
+- **Environment Isolation** - Docker deployment ensures complete dependency environment consistency
+- **Production Ready** - Includes health checks, log management and other production-grade features
 
-### 💻 Claude Code直接使用
-- **透明代理模式** - /v1/responses和/v1/messages端点支持直接转发
-- **完美兼容** - 与Claude Code CLI工具无缝集成
-- **系统提示注入** - 自动添加Droid身份标识，保持上下文一致性
-- **请求头标准化** - 自动添加Factory特定的认证和会话头信息
-- **零配置使用** - Claude Code可直接使用，无需额外设置
+### 💻 Direct Claude Code Usage
+- **Transparent Proxy Mode** - /v1/responses and /v1/messages endpoints support direct forwarding
+- **Perfect Compatibility** - Seamless integration with Claude Code CLI tools
+- **System Prompt Injection** - Automatically adds Droid identity identifier, maintains context consistency
+- **Request Header Standardization** - Automatically adds Factory-specific authentication and session header information
+- **Zero Configuration Usage** - Claude Code can use directly, no additional setup needed
 
-## 其他特性
+## Other Features
 
-- 🎯 **标准 OpenAI API 接口** - 使用熟悉的 OpenAI API 格式访问所有模型
-- 🔄 **自动格式转换** - 自动处理不同 LLM 提供商的格式差异
-- 🌊 **智能流式处理** - 完全尊重客户端stream参数，支持流式和非流式响应
-- ⚙️ **灵活配置** - 通过配置文件自定义模型和端点
+- 🎯 **Standard OpenAI API Interface** - Access all models using familiar OpenAI API format
+- 🔄 **Automatic Format Conversion** - Automatically handles format differences between different LLM providers
+- 🌊 **Smart Streaming Processing** - Fully respects client stream parameter, supports both streaming and non-streaming responses
+- ⚙️ **Flexible Configuration** - Customize models and endpoints through configuration files
 
-## 安装
+## Installation
 
-安装项目依赖：
+Install project dependencies:
 
 ```bash
 npm install
 ```
 
-**依赖说明**：
-- `express` - Web服务器框架
-- `node-fetch` - HTTP请求库
-- `https-proxy-agent` - 为外部请求提供代理支持
+**Dependency Description**:
+- `express` - Web server framework
+- `node-fetch` - HTTP request library
+- `https-proxy-agent` - Provides proxy support for external requests
 
-> 💡 **首次使用必须执行 `npm install`**，之后只需要 `npm start` 启动服务即可。
+> 💡 **First-time use must execute `npm install`**, after which only `npm start` is needed to start the service.
 
-## 快速开始
+## Quick Start
 
-### 1. 配置认证（三种方式）
+### 1. Configure Authentication (Three Methods)
 
-**优先级：FACTORY_API_KEY > refresh_token > 客户端authorization**
+**Priority: FACTORY_API_KEY > refresh_token > client authorization**
 
 ```bash
-# 方式1：固定API密钥（最高优先级）
+# Method 1: Fixed API key (highest priority)
 export FACTORY_API_KEY="your_factory_api_key_here"
 
-# 方式2：自动刷新令牌
+# Method 2: Auto-refresh token
 export DROID_REFRESH_KEY="your_refresh_token_here"
 
-# 方式3：配置文件 ~/.factory/auth.json
+# Method 3: Configuration file ~/.factory/auth.json
 {
   "access_token": "your_access_token", 
   "refresh_token": "your_refresh_token"
 }
 
-# 方式4：无配置（客户端授权）
-# 服务器将使用客户端请求头中的authorization字段
+# Method 4: No configuration (client authorization)
+# Server will use authorization field from client request header
 ```
 
-### 2. 配置模型（可选）
+### 2. Configure Models (Optional)
 
-编辑 `config.json` 添加或修改模型：
+Edit `config.json` to add or modify models:
 
 ```json
 {
@@ -105,9 +105,9 @@ export DROID_REFRESH_KEY="your_refresh_token_here"
 }
 ```
 
-### 3. 配置网络代理（可选）
+### 3. Configure Network Proxy (Optional)
 
-通过 `config.json` 的 `proxies` 数组为所有下游请求配置代理。数组为空表示直连；配置多个代理时会按照数组顺序轮询使用。
+Configure proxies for all downstream requests through the `proxies` array in `config.json`. Empty array means direct connection; when multiple proxies are configured, they will be used in round-robin order according to the array sequence.
 
 ```json
 {
@@ -124,90 +124,90 @@ export DROID_REFRESH_KEY="your_refresh_token_here"
 }
 ```
 
-- `url` 支持带用户名和密码的 `http://user:pass@host:port` 或 HTTPS 代理地址，必要时请为特殊字符进行 URL 编码。
-- 每次请求都会调用下一项代理，配置发生变化时索引会自动重置。
-- 当配置合法代理时，日志会输出类似 `[INFO] Using proxy auth-proxy for request to ...`，可用于验证命中情况。
-- 代理数组留空或所有条目无效时，系统自动回退为直连。
+- `url` supports `http://user:pass@host:port` with username and password or HTTPS proxy addresses, please URL encode special characters if necessary.
+- Each request calls the next proxy, index automatically resets when configuration changes.
+- When valid proxy is configured, logs will output similar to `[INFO] Using proxy auth-proxy for request to ...`, can be used to verify hit status.
+- System automatically falls back to direct connection when proxy array is empty or all entries are invalid.
 
-#### 推理级别配置
+#### Reasoning Level Configuration
 
-每个模型支持五种推理级别：
+Each model supports five reasoning levels:
 
-- **`auto`** - 遵循客户端原始请求，不做任何推理参数修改
-- **`off`** - 强制关闭推理功能，删除所有推理字段
-- **`low`** - 低级推理 (Anthropic: 4096 tokens, OpenAI: low effort)
-- **`medium`** - 中级推理 (Anthropic: 12288 tokens, OpenAI: medium effort) 
-- **`high`** - 高级推理 (Anthropic: 24576 tokens, OpenAI: high effort)
+- **`auto`** - Follow client original request, no reasoning parameter modifications
+- **`off`** - Force disable reasoning, delete all reasoning fields
+- **`low`** - Low-level reasoning (Anthropic: 4096 tokens, OpenAI: low effort)
+- **`medium`** - Medium-level reasoning (Anthropic: 12288 tokens, OpenAI: medium effort) 
+- **`high`** - High-level reasoning (Anthropic: 24576 tokens, OpenAI: high effort)
 
-**对于Anthropic模型 (Claude)**：
+**For Anthropic Models (Claude)**:
 ```json
 {
   "name": "Claude Sonnet 4.5", 
   "id": "claude-sonnet-4-5-20250929",
   "type": "anthropic",
-  "reasoning": "auto"  // 推荐：让客户端控制推理
+  "reasoning": "auto"  // Recommended: let client control reasoning
 }
 ```
-- `auto`: 保留客户端thinking字段，不修改anthropic-beta头
-- `low/medium/high`: 自动添加thinking字段和anthropic-beta头，budget_tokens根据级别设置
+- `auto`: Keep client thinking field, don't modify anthropic-beta header
+- `low/medium/high`: Automatically add thinking field and anthropic-beta header, budget_tokens set according to level
 
-**对于OpenAI模型 (GPT)**：
+**For OpenAI Models (GPT)**:
 ```json
 {
   "name": "GPT-5",
   "id": "gpt-5-2025-08-07",
   "type": "openai", 
-  "reasoning": "auto"  // 推荐：让客户端控制推理
+  "reasoning": "auto"  // Recommended: let client control reasoning
 }
 ```
-- `auto`: 保留客户端reasoning字段不变
-- `low/medium/high`: 自动添加reasoning字段，effort参数设置为对应级别
+- `auto`: Keep client reasoning field unchanged
+- `low/medium/high`: Automatically add reasoning field, effort parameter set to corresponding level
 
-## 使用方法
+## Usage
 
-### 启动服务器
+### Start the Server
 
-**方式1：使用npm命令**
+**Method 1: Using npm command**
 ```bash
 npm start
 ```
 
-**方式2：使用启动脚本**
+**Method 2: Using startup scripts**
 
-Linux/macOS：
+Linux/macOS:
 ```bash
 ./start.sh
 ```
 
-Windows：
+Windows:
 ```cmd
 start.bat
 ```
 
-服务器默认运行在 `http://localhost:3000`。
+Server runs by default on `http://localhost:3000`.
 
-### Docker部署
+### Docker Deployment
 
-#### 使用docker-compose（推荐）
+#### Using docker-compose (Recommended)
 
 ```bash
-# 构建并启动服务
+# Build and start service
 docker-compose up -d
 
-# 查看日志
+# View logs
 docker-compose logs -f
 
-# 停止服务
+# Stop service
 docker-compose down
 ```
 
-#### 使用Dockerfile
+#### Using Dockerfile
 
 ```bash
-# 构建镜像
+# Build image
 docker build -t droid2api .
 
-# 运行容器
+# Run container
 docker run -d \
   -p 3000:3000 \
   -e DROID_REFRESH_KEY="your_refresh_token" \
@@ -215,166 +215,166 @@ docker run -d \
   droid2api
 ```
 
-#### 环境变量配置
+#### Environment Variable Configuration
 
-Docker部署支持以下环境变量：
+Docker deployment supports the following environment variables:
 
-- `DROID_REFRESH_KEY` - 刷新令牌（必需）
-- `PORT` - 服务端口（默认3000）
-- `NODE_ENV` - 运行环境（production/development）
+- `DROID_REFRESH_KEY` - Refresh token (required)
+- `PORT` - Service port (default 3000)
+- `NODE_ENV` - Runtime environment (production/development)
 
-### Claude Code集成
+### Claude Code Integration
 
-#### 配置Claude Code使用droid2api
+#### Configure Claude Code to use droid2api
 
-1. **设置代理地址**（在Claude Code配置中）：
+1. **Set proxy address** (in Claude Code configuration):
    ```
    API Base URL: http://localhost:3000
    ```
 
-2. **可用端点**：
-   - `/v1/chat/completions` - 标准OpenAI格式，自动格式转换
-   - `/v1/responses` - 直接转发到OpenAI端点（透明代理）
-   - `/v1/messages` - 直接转发到Anthropic端点（透明代理）
-   - `/v1/models` - 获取可用模型列表
+2. **Available endpoints**:
+   - `/v1/chat/completions` - Standard OpenAI format, automatic format conversion
+   - `/v1/responses` - Direct forwarding to OpenAI endpoint (transparent proxy)
+   - `/v1/messages` - Direct forwarding to Anthropic endpoint (transparent proxy)
+   - `/v1/models` - Get available model list
 
-3. **自动功能**：
-   - ✅ 系统提示自动注入
-   - ✅ 认证头自动添加
-   - ✅ 推理级别自动配置
-   - ✅ 会话ID自动生成
+3. **Automatic features**:
+   - ✅ System prompt auto-injection
+   - ✅ Authentication header auto-addition
+   - ✅ Reasoning level auto-configuration
+   - ✅ Session ID auto-generation
 
-#### 示例：Claude Code + 推理级别
+#### Example: Claude Code + Reasoning Level
 
-当使用Claude模型时，代理会根据配置自动添加推理功能：
+When using Claude models, the proxy will automatically add reasoning features based on configuration:
 
 ```bash
-# Claude Code发送的请求会自动转换为：
+# Claude Code request will be automatically converted to:
 {
   "model": "claude-sonnet-4-5-20250929",
   "thinking": {
     "type": "enabled",
-    "budget_tokens": 24576  // high级别自动设置
+    "budget_tokens": 24576  // high level auto-set
   },
   "messages": [...],
-  // 同时自动添加 anthropic-beta: interleaved-thinking-2025-05-14 头
+  // Also auto-add anthropic-beta: interleaved-thinking-2025-05-14 header
 }
 ```
 
-### API 使用
+### API Usage
 
-#### 获取模型列表
+#### Get Model List
 
 ```bash
 curl http://localhost:3000/v1/models
 ```
 
-#### 对话补全
+#### Chat Completion
 
-**流式响应**（实时返回）：
+**Streaming Response** (real-time return):
 ```bash
 curl http://localhost:3000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "claude-opus-4-1-20250805",
     "messages": [
-      {"role": "user", "content": "你好"}
+      {"role": "user", "content": "Hello"}
     ],
     "stream": true
   }'
 ```
 
-**非流式响应**（等待完整结果）：
+**Non-Streaming Response** (wait for complete result):
 ```bash
 curl http://localhost:3000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "claude-opus-4-1-20250805",
     "messages": [
-      {"role": "user", "content": "你好"}
+      {"role": "user", "content": "Hello"}
     ],
     "stream": false
   }'
 ```
 
-**支持的参数：**
-- `model` - 模型 ID（必需）
-- `messages` - 对话消息数组（必需）
-- `stream` - 流式输出控制（可选）
-  - `true` - 启用流式响应，实时返回内容
-  - `false` - 禁用流式响应，等待完整结果
-  - 未指定 - 由服务器端决定默认行为
-- `max_tokens` - 最大输出长度
-- `temperature` - 温度参数（0-1）
+**Supported parameters:**
+- `model` - Model ID (required)
+- `messages` - Conversation message array (required)
+- `stream` - Streaming output control (optional)
+  - `true` - Enable streaming response, return content in real-time
+  - `false` - Disable streaming response, wait for complete result
+  - Unspecified - Server-side decides default behavior
+- `max_tokens` - Maximum output length
+- `temperature` - Temperature parameter (0-1)
 
-## 常见问题
+## Frequently Asked Questions
 
-### 如何配置授权机制？
+### How to configure authorization mechanism?
 
-droid2api支持三级授权优先级：
+droid2api supports three-level authorization priority:
 
-1. **FACTORY_API_KEY**（最高优先级）
+1. **FACTORY_API_KEY** (highest priority)
    ```bash
    export FACTORY_API_KEY="your_api_key"
    ```
-   使用固定API密钥，停用自动刷新机制。
+   Use fixed API key, disable auto-refresh mechanism.
 
-2. **refresh_token机制**
+2. **refresh_token mechanism**
    ```bash
    export DROID_REFRESH_KEY="your_refresh_token"
    ```
-   自动刷新令牌，每6小时更新一次。
+   Auto-refresh token, updates every 6 hours.
 
-3. **客户端授权**（fallback）
-   无需配置，直接使用客户端请求头的authorization字段。
+3. **Client authorization** (fallback)
+   No configuration needed, directly use authorization field from client request header.
 
-### 什么时候使用FACTORY_API_KEY？
+### When to use FACTORY_API_KEY?
 
-- **开发环境** - 使用固定密钥避免令牌过期问题
-- **CI/CD流水线** - 稳定的认证，不依赖刷新机制
-- **临时测试** - 快速设置，无需配置refresh_token
+- **Development Environment** - Use fixed key to avoid token expiration issues
+- **CI/CD Pipelines** - Stable authentication, doesn't depend on refresh mechanism
+- **Temporary Testing** - Quick setup, no need to configure refresh_token
 
-### 如何控制流式和非流式响应？
+### How to control streaming and non-streaming responses?
 
-droid2api完全尊重客户端的stream参数设置：
+droid2api fully respects client's stream parameter setting:
 
-- **`"stream": true`** - 启用流式响应，内容实时返回
-- **`"stream": false`** - 禁用流式响应，等待完整结果后返回
-- **不设置stream** - 由服务器端决定默认行为，不强制转换
+- **`"stream": true`** - Enable streaming response, return content in real-time
+- **`"stream": false`** - Disable streaming response, wait for complete result before returning
+- **Don't set stream** - Server-side decides default behavior, no forced conversion
 
-### 什么是auto推理模式？
+### What is auto reasoning mode?
 
-`auto` 是v1.3.0新增的推理级别，完全遵循客户端的原始请求：
+`auto` is a reasoning level added in v1.3.0 that completely follows the client's original request:
 
-**行为特点**：
-- 🎯 **零干预** - 不添加、不删除、不修改任何推理相关字段
-- 🔄 **完全透传** - 客户端发什么就转发什么
-- 🛡️ **头信息保护** - 不修改anthropic-beta等推理相关头信息
+**Behavior Characteristics**:
+- 🎯 **Zero Intervention** - Doesn't add, delete, or modify any reasoning-related fields
+- 🔄 **Complete Pass-through** - Whatever the client sends is forwarded
+- 🛡️ **Header Protection** - Doesn't modify anthropic-beta and other reasoning-related headers
 
-**使用场景**：
-- 客户端需要完全控制推理参数
-- 与原始API行为保持100%一致
-- 不同客户端有不同的推理需求
+**Use Cases**:
+- Client needs complete control over reasoning parameters
+- Maintain 100% consistency with original API behavior
+- Different clients have different reasoning needs
 
-**示例对比**：
+**Example Comparison**:
 ```bash
-# 客户端请求包含推理字段
+# Client request contains reasoning fields
 {
   "model": "claude-opus-4-1-20250805",
-  "reasoning": "auto",           // 配置为auto
+  "reasoning": "auto",           // configured as auto
   "messages": [...],
   "thinking": {"type": "enabled", "budget_tokens": 8192}
 }
 
-# auto模式：完全保留客户端设置
-→ thinking字段原样转发，不做任何修改
+# Auto mode: completely preserves client settings
+→ thinking field forwarded as-is, no modifications
 
-# 如果配置为"high"：会被覆盖为 {"type": "enabled", "budget_tokens": 24576}
+# If configured as "high": will be overridden to {"type": "enabled", "budget_tokens": 24576}
 ```
 
-### 如何配置推理级别？
+### How to configure reasoning levels?
 
-在 `config.json` 中为每个模型设置 `reasoning` 字段：
+Set `reasoning` field for each model in `config.json`:
 
 ```json
 {
@@ -388,52 +388,52 @@ droid2api完全尊重客户端的stream参数设置：
 }
 ```
 
-**推理级别说明**：
+**Reasoning Level Description**:
 
-| 级别 | 行为 | 适用场景 |
-|------|------|----------|
-| `auto` | 完全遵循客户端原始请求参数 | 让客户端自主控制推理 |
-| `off` | 强制禁用推理，删除所有推理字段 | 快速响应场景 |
-| `low` | 轻度推理 (4096 tokens) | 简单任务 |
-| `medium` | 中度推理 (12288 tokens) | 平衡性能与质量 |
-| `high` | 深度推理 (24576 tokens) | 复杂任务 |
+| Level | Behavior | Use Cases |
+|------|---------|-----------|
+| `auto` | Completely follow client original request parameters | Let client control reasoning independently |
+| `off` | Force disable reasoning, delete all reasoning fields | Quick response scenarios |
+| `low` | Light reasoning (4096 tokens) | Simple tasks |
+| `medium` | Medium reasoning (12288 tokens) | Balance performance and quality |
+| `high` | Deep reasoning (24576 tokens) | Complex tasks |
 
-### 令牌多久刷新一次？
+### How often are tokens refreshed?
 
-系统每6小时自动刷新一次访问令牌。刷新令牌有效期为8小时，确保有2小时的缓冲时间。
+System automatically refreshes access token every 6 hours. Refresh token valid for 8 hours, ensuring 2-hour buffer time.
 
-### 如何检查令牌状态？
+### How to check token status?
 
-查看服务器日志，成功刷新时会显示：
+Check server logs, successful refresh shows:
 ```
 Token refreshed successfully, expires at: 2025-01-XX XX:XX:XX
 ```
 
-### Claude Code无法连接怎么办？
+### What to do if Claude Code cannot connect?
 
-1. 确保droid2api服务器正在运行：`curl http://localhost:3000/v1/models`
-2. 检查Claude Code的API Base URL设置
-3. 确认防火墙没有阻止端口3000
+1. Ensure droid2api server is running: `curl http://localhost:3000/v1/models`
+2. Check Claude Code's API Base URL setting
+3. Confirm firewall is not blocking port 3000
 
-### 推理功能为什么没有生效？
+### Why is reasoning not working?
 
-**如果推理级别设置无效**：
-1. 检查模型配置中的 `reasoning` 字段是否为有效值 (`auto/off/low/medium/high`)
-2. 确认模型ID是否正确匹配config.json中的配置
-3. 查看服务器日志确认推理字段是否正确处理
+**If reasoning level setting is invalid**:
+1. Check if `reasoning` field in model configuration is valid (`auto/off/low/medium/high`)
+2. Confirm model ID correctly matches configuration in config.json
+3. Check server logs to confirm reasoning fields are processed correctly
 
-**如果使用auto模式但推理不生效**：
-1. 确认客户端请求中包含了推理字段 (`reasoning` 或 `thinking`)
-2. auto模式不会添加推理字段，只会保留客户端原有的设置
-3. 如需强制推理，请改用 `low/medium/high` 级别
+**If using auto mode but reasoning not working**:
+1. Confirm client request contains reasoning fields (`reasoning` or `thinking`)
+2. Auto mode doesn't add reasoning fields, only preserves client's original settings
+3. If forced reasoning is needed, switch to `low/medium/high` levels
 
-**推理字段对应关系**：
-- OpenAI模型 (`gpt-*`) → 使用 `reasoning` 字段
-- Anthropic模型 (`claude-*`) → 使用 `thinking` 字段
+**Reasoning field correspondence**:
+- OpenAI models (`gpt-*`) → Use `reasoning` field
+- Anthropic models (`claude-*`) → Use `thinking` field
 
-### 如何更改端口？
+### How to change port?
 
-编辑 `config.json` 中的 `port` 字段：
+Edit `port` field in `config.json`:
 
 ```json
 {
@@ -441,9 +441,9 @@ Token refreshed successfully, expires at: 2025-01-XX XX:XX:XX
 }
 ```
 
-### 如何启用调试日志？
+### How to enable debug logs?
 
-在 `config.json` 中设置：
+Set in `config.json`:
 
 ```json
 {
@@ -451,18 +451,18 @@ Token refreshed successfully, expires at: 2025-01-XX XX:XX:XX
 }
 ```
 
-## 故障排查
+## Troubleshooting
 
-### 认证失败
+### Authentication Failure
 
-确保已正确配置 refresh token：
-- 设置环境变量 `DROID_REFRESH_KEY`
-- 或创建 `~/.factory/auth.json` 文件
+Ensure refresh token is correctly configured:
+- Set environment variable `DROID_REFRESH_KEY`
+- Or create `~/.factory/auth.json` file
 
-### 模型不可用
+### Model Unavailable
 
-检查 `config.json` 中的模型配置，确保模型 ID 和类型正确。
+Check model configuration in `config.json`, ensure model ID and type are correct.
 
-## 许可证
+## License
 
 MIT
