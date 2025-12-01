@@ -1,23 +1,23 @@
-# 使用官方 Node.js 运行时作为基础镜像
+# Use official Node.js runtime as base image
 FROM node:24-alpine
 
-# 设置工作目录
+# Set working directory
 WORKDIR /app
 
-# 复制 package.json 和 package-lock.json
+# Copy package.json and package-lock.json
 COPY package*.json ./
 
-# 安装项目依赖
+# Install project dependencies
 RUN npm ci --only=production
 
-# 复制项目文件
+# Copy project files
 COPY . .
 
-# 暴露端口（默认3000，可通过环境变量覆盖）
+# Expose port (default 3000, can be overridden by environment variable)
 EXPOSE 3000
 
-# 设置环境变量
+# Set environment variables
 ENV NODE_ENV=production
 
-# 启动应用
+# Start application
 CMD ["node", "server.js"]

@@ -78,7 +78,7 @@ router.get('/v1/models', (req, res) => {
   }
 });
 
-// 标准 OpenAI 聊天补全处理函数（带格式转换）
+// Standard OpenAI chat completion handler (with format conversion)
 async function handleChatCompletions(req, res) {
   logInfo('POST /v1/chat/completions');
 
@@ -179,7 +179,7 @@ async function handleChatCompletions(req, res) {
       res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Connection', 'keep-alive');
 
-      // common 类型直接转发，不使用 transformer
+      // common type direct forwarding, don't use transformer
       if (model.type === 'common') {
         try {
           for await (const chunk of response.body) {
@@ -192,7 +192,7 @@ async function handleChatCompletions(req, res) {
           res.end();
         }
       } else {
-        // anthropic 和 openai 类型使用 transformer
+        // anthropic and openai types use transformer
         let transformer;
         if (model.type === 'anthropic') {
           transformer = new AnthropicResponseTransformer(modelId, `chatcmpl-${Date.now()}`);
@@ -219,12 +219,12 @@ async function handleChatCompletions(req, res) {
           logResponse(200, null, converted);
           res.json(converted);
         } catch (e) {
-          // 如果转换失败，回退为原始数据
+          // If conversion fails, fallback to original data
           logResponse(200, null, data);
           res.json(data);
         }
       } else {
-        // anthropic/common: 保持现有逻辑，直接转发
+        // anthropic/common: keep existing logic, direct forwarding
         logResponse(200, null, data);
         res.json(data);
       }
@@ -239,7 +239,7 @@ async function handleChatCompletions(req, res) {
   }
 }
 
-// 直接转发 OpenAI 请求（不做格式转换）
+// Direct forwarding OpenAI request (no format conversion)
 async function handleDirectResponses(req, res) {
   logInfo('POST /v1/responses');
 
@@ -256,11 +256,11 @@ async function handleDirectResponses(req, res) {
       return res.status(404).json({ error: `Model ${modelId} not found` });
     }
 
-    // 只允许 openai 类型端点
+    // Only allow openai type endpoints
     if (model.type !== 'openai') {
       return res.status(400).json({ 
         error: 'Invalid endpoint type',
-        message: `/v1/responses 接口只支持 openai 类型端点，当前模型 ${modelId} 是 ${model.type} 类型`
+        message: `/v1/responses endpoint only supports openai type endpoints, current model ${modelId} is ${model.type} type`
       });
     }
 
@@ -291,40 +291,40 @@ async function handleDirectResponses(req, res) {
     // Get provider from model config
     const provider = getModelProvider(modelId);
     
-    // 获取 headers
+    // Get headers
     const headers = getOpenAIHeaders(authHeader, clientHeaders, provider);
 
-    // 注入系统提示到 instructions 字段，并更新重定向后的模型ID
+    // Inject system prompt to instructions field, and update redirected model ID
     const systemPrompt = getSystemPrompt();
     const modifiedRequest = { ...openaiRequest, model: modelId };
     if (systemPrompt) {
-      // 如果已有 instructions，则在前面添加系统提示
+      // If there are existing instructions, prepend system prompt
       if (modifiedRequest.instructions) {
         modifiedRequest.instructions = systemPrompt + modifiedRequest.instructions;
       } else {
-        // 否则直接设置系统提示
+        // Otherwise set system prompt directly
         modifiedRequest.instructions = systemPrompt;
       }
     }
 
-    // 处理reasoning字段
+    // Handle reasoning field
     const reasoningLevel = getModelReasoning(modelId);
     if (reasoningLevel === 'auto') {
-      // Auto模式：保持原始请求的reasoning字段不变
-      // 如果原始请求有reasoning字段就保留，没有就不添加
+      // Auto mode: keep original request's reasoning field unchanged
+      // If original request has reasoning field, keep it; otherwise don't add one
     } else if (reasoningLevel && ['low', 'medium', 'high'].includes(reasoningLevel)) {
       modifiedRequest.reasoning = {
         effort: reasoningLevel,
         summary: 'auto'
       };
     } else {
-      // 如果配置是off或无效，移除reasoning字段
+      // If configuration is off or invalid, remove reasoning field
       delete modifiedRequest.reasoning;
     }
 
     logRequest('POST', endpoint.base_url, headers, modifiedRequest);
 
-    // 转发修改后的请求
+    // Forward modified request
     const proxyAgentInfo = getNextProxyAgent(endpoint.base_url);
     const fetchOptions = {
       method: 'POST',
@@ -352,13 +352,13 @@ async function handleDirectResponses(req, res) {
     const isStreaming = openaiRequest.stream === true;
 
     if (isStreaming) {
-      // 直接转发流式响应，不做任何转换
+      // Direct forwarding streaming response, no conversion
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Connection', 'keep-alive');
 
       try {
-        // 直接将原始响应流转发给客户端
+        // Directly forward original response stream to client
         for await (const chunk of response.body) {
           res.write(chunk);
         }
@@ -369,7 +369,7 @@ async function handleDirectResponses(req, res) {
         res.end();
       }
     } else {
-      // 直接转发非流式响应，不做任何转换
+      // Direct forwarding non-streaming response, no conversion
       const data = await response.json();
       logResponse(200, null, data);
       res.json(data);
@@ -384,7 +384,7 @@ async function handleDirectResponses(req, res) {
   }
 }
 
-// 直接转发 Anthropic 请求（不做格式转换）
+// Direct forwarding Anthropic request (no format conversion)
 async function handleDirectMessages(req, res) {
   logInfo('POST /v1/messages');
 
@@ -401,11 +401,11 @@ async function handleDirectMessages(req, res) {
       return res.status(404).json({ error: `Model ${modelId} not found` });
     }
 
-    // 只允许 anthropic 类型端点
+    // Only allow anthropic type endpoints
     if (model.type !== 'anthropic') {
       return res.status(400).json({ 
         error: 'Invalid endpoint type',
-        message: `/v1/messages 接口只支持 anthropic 类型端点，当前模型 ${modelId} 是 ${model.type} 类型`
+        message: `/v1/messages endpoint only supports anthropic type endpoints, current model ${modelId} is ${model.type} type`
       });
     }
 
@@ -436,33 +436,33 @@ async function handleDirectMessages(req, res) {
     // Get provider from model config
     const provider = getModelProvider(modelId);
     
-    // 获取 headers
+    // Get headers
     const isStreaming = anthropicRequest.stream === true;
     const headers = getAnthropicHeaders(authHeader, clientHeaders, isStreaming, modelId, provider);
 
-    // 注入系统提示到 system 字段，并更新重定向后的模型ID
+    // Inject system prompt to system field, and update redirected model ID
     const systemPrompt = getSystemPrompt();
     const modifiedRequest = { ...anthropicRequest, model: modelId };
     if (systemPrompt) {
       if (modifiedRequest.system && Array.isArray(modifiedRequest.system)) {
-        // 如果已有 system 数组，则在最前面插入系统提示
+        // If there is already a system array, prepend system prompt at the beginning
         modifiedRequest.system = [
           { type: 'text', text: systemPrompt },
           ...modifiedRequest.system
         ];
       } else {
-        // 否则创建新的 system 数组
+        // Otherwise create a new system array
         modifiedRequest.system = [
           { type: 'text', text: systemPrompt }
         ];
       }
     }
 
-    // 处理thinking字段
+    // Handle thinking field
     const reasoningLevel = getModelReasoning(modelId);
     if (reasoningLevel === 'auto') {
-      // Auto模式：保持原始请求的thinking字段不变
-      // 如果原始请求有thinking字段就保留，没有就不添加
+      // Auto mode: keep original request's thinking field unchanged
+      // If original request has thinking field, keep it; otherwise don't add one
     } else if (reasoningLevel && ['low', 'medium', 'high'].includes(reasoningLevel)) {
       const budgetTokens = {
         'low': 4096,
@@ -475,13 +475,13 @@ async function handleDirectMessages(req, res) {
         budget_tokens: budgetTokens[reasoningLevel]
       };
     } else {
-      // 如果配置是off或无效，移除thinking字段
+      // If configuration is off or invalid, remove thinking field
       delete modifiedRequest.thinking;
     }
 
     logRequest('POST', endpoint.base_url, headers, modifiedRequest);
 
-    // 转发修改后的请求
+    // Forward modified request
     const proxyAgentInfo = getNextProxyAgent(endpoint.base_url);
     const fetchOptions = {
       method: 'POST',
@@ -507,13 +507,13 @@ async function handleDirectMessages(req, res) {
     }
 
     if (isStreaming) {
-      // 直接转发流式响应，不做任何转换
+      // Direct forwarding streaming response, no conversion
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Connection', 'keep-alive');
 
       try {
-        // 直接将原始响应流转发给客户端
+        // Directly forward original response stream to client
         for await (const chunk of response.body) {
           res.write(chunk);
         }
@@ -524,7 +524,7 @@ async function handleDirectMessages(req, res) {
         res.end();
       }
     } else {
-      // 直接转发非流式响应，不做任何转换
+      // Direct forwarding non-streaming response, no conversion
       const data = await response.json();
       logResponse(200, null, data);
       res.json(data);
@@ -539,7 +539,7 @@ async function handleDirectMessages(req, res) {
   }
 }
 
-// 处理 Anthropic count_tokens 请求
+// Handle Anthropic count_tokens request
 async function handleCountTokens(req, res) {
   logInfo('POST /v1/messages/count_tokens');
 
@@ -556,11 +556,11 @@ async function handleCountTokens(req, res) {
       return res.status(404).json({ error: `Model ${modelId} not found` });
     }
 
-    // 只允许 anthropic 类型端点
+    // Only allow anthropic type endpoints
     if (model.type !== 'anthropic') {
       return res.status(400).json({
         error: 'Invalid endpoint type',
-        message: `/v1/messages/count_tokens 接口只支持 anthropic 类型端点，当前模型 ${modelId} 是 ${model.type} 类型`
+        message: `/v1/messages/count_tokens endpoint only supports anthropic type endpoints, current model ${modelId} is ${model.type} type`
       });
     }
 
@@ -591,10 +591,10 @@ async function handleCountTokens(req, res) {
     
     const headers = getAnthropicHeaders(authHeader, clientHeaders, false, modelId, provider);
 
-    // 构建 count_tokens 端点 URL
+    // Build count_tokens endpoint URL
     const countTokensUrl = endpoint.base_url.replace('/v1/messages', '/v1/messages/count_tokens');
 
-    // 更新请求体中的模型ID为重定向后的ID
+    // Update model ID in request body to redirected ID
     const modifiedRequest = { ...anthropicRequest, model: modelId };
 
     logInfo(`Forwarding to count_tokens endpoint: ${countTokensUrl}`);
@@ -637,7 +637,7 @@ async function handleCountTokens(req, res) {
   }
 }
 
-// 注册路由
+// Register routes
 router.post('/v1/chat/completions', handleChatCompletions);
 router.post('/v1/responses', handleDirectResponses);
 router.post('/v1/messages', handleDirectMessages);

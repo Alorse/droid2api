@@ -7,14 +7,14 @@ services:
     ports:
       - "3000:3000"
     environment:
-      # 认证配置（按优先级选择其一）：
-      # 最高优先级：固定API密钥（推荐用于生产环境）
+      # Authentication configuration (choose one by priority):
+      # Highest priority: Fixed API key (recommended for production)
       - FACTORY_API_KEY=${FACTORY_API_KEY}
-      # 次优先级：refresh token自动刷新机制
+      # Second priority: refresh token auto-refresh mechanism
       - DROID_REFRESH_KEY=${DROID_REFRESH_KEY}
-      # 可选：如果需要修改端口，在config.json中配置
+      # Optional: If you need to change port, configure in config.json
     volumes:
-      # 可选：持久化auth.json以保存刷新的tokens
+      # Optional: Persist auth.json to save refreshed tokens
       - ./data:/app/data
     restart: unless-stopped
     healthcheck:
