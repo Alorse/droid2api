@@ -3,7 +3,7 @@
   "model_redirects": {
     "claude-3-5-haiku-20241022": "claude-haiku-4-5-20251001",
     "claude-sonnet-4-5": "claude-sonnet-4-5-20250929",
-    "gpt-5":"gpt-5-2025-08-07"
+    "gpt-5": "gpt-5-2025-08-07"
   },
   "endpoint": [
     {
